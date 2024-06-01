@@ -166,7 +166,7 @@ class PaymentProposal extends Component implements HasForms, HasActions
                         "number" => Str::remove([' ', '.'], $this->data['creditCard']['number']),
                         "expiryMonth" => $this->data['creditCard']['expiryMonth'],
                         "expiryYear" => "20{$this->data['creditCard']['expiryYear']}",
-                        "ccv" => "318"
+                        "ccv" => $this->data['creditCard']['ccv'],
                     ],
                     "creditCardHolderInfo" => [
                         "name" => $this->data['customer']['name'],
