@@ -80,7 +80,7 @@ class PaymentProposal extends Component implements HasForms, HasActions
                             ->mask('99999-999')
                             ->required(),
                         TextInput::make('customer.city')
-                            ->label('Cidadde')
+                            ->label('Cidade')
                             ->default($this->proposal->customer->name)
                             ->required(),
                         TextInput::make('customer.street')

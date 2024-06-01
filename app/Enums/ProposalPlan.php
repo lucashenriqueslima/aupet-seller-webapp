@@ -25,7 +25,7 @@ enum ProposalPlan: string implements HasLabel
     public function getPrice(): float
     {
         return match ($this) {
-            self::BasicJunior => 8.90,
+            self::BasicJunior => 79.90,
             self::BasicSenior => 110.90,
             self::MediumJunior => 159.90,
             self::MediumSenior => 190.00,
