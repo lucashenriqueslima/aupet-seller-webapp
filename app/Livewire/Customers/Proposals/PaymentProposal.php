@@ -6,6 +6,7 @@ use App\Enums\ProposalStatus;
 use App\Models\Customer;
 use App\Models\Proposal;
 use App\Services\Asaas\AsaasService;
+use Exception;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Actions\Action;
@@ -25,6 +26,7 @@ class PaymentProposal extends Component implements HasForms, HasActions
     public Proposal $proposal;
 
     public ?array $data = [];
+    public bool $isLoading = false;
 
     public function mount(string $encryptedId)
     {
@@ -126,45 +128,79 @@ class PaymentProposal extends Component implements HasForms, HasActions
     public function submit()
     {
 
+        if ($this->isLoading) {
+            return;
+        }
+
+        $this->isLoading = true;
+
         $asaasService = new AsaasService();
 
-        $asaasService->findOrCreateCustomer(
-            [
-                'name' => $this->data['customer']['name'],
-                'email' => $this->data['customer']['email'],
-                'mobilePhone' => $this->data['customer']['phone'],
-                'cpfCnpj' => $this->data['customer']['document'],
-                'externalReference' => $this->proposal->customer->id,
-            ]
-        );
+        try {
+            $asaasService->findOrCreateCustomer(
+                [
+                    'name' => $this->data['customer']['name'],
+                    'email' => $this->data['customer']['email'],
+                    'mobilePhone' => $this->data['customer']['phone'],
+                    'cpfCnpj' => $this->data['customer']['document'],
+                    'externalReference' => $this->proposal->customer->id,
+                ]
+            );
+        } catch (Exception $e) {
+            $this->isLoading = false;
+            $this->dispatch('alert', [
+                'title' => 'Erro ao Criar Cliente!',
+                'type' => 'error',
+                'message' => $e->getMessage(),
+            ]);
+            return;
+        }
 
-        $asaasService->createSignature(
-            [
-                "billingType" => "CREDIT_CARD",
-                "cycle" => "MONTHLY",
-                "creditCard" => [
-                    "holderName" => $this->data['creditCard']['name'],
-                    "number" => Str::remove([' ', '.'], $this->data['creditCard']['number']),
-                    "expiryMonth" => $this->data['creditCard']['expiryMonth'],
-                    "expiryYear" => "20{$this->data['creditCard']['expiryYear']}",
-                    "ccv" => "318"
-                ],
-                "creditCardHolderInfo" => [
-                    "name" => $this->data['customer']['name'],
-                    "email" => $this->data['customer']['email'],
-                    "cpfCnpj" => Str::remove(['.', '-'], $this->data['customer']['document']),
-                    "postalCode" => $this->data['customer']['zip'],
-                    "addressNumber" => $this->data['customer']['number'],
-                    "addressComplement" => $this->data['customer']['complement'],
-                    "phone" => Str::remove(['(', ')', ' ', '-'], $this->data['customer']['phone']),
-                    "mobilePhone" => Str::remove(['(', ')', ' ', '-'], $this->data['customer']['phone'])
-                ],
-                "customer" => $asaasService->asaassCustomer['id'],
-                "nextDueDate" => now()->format('Y-m-d'),
-                "value" => $this->proposal->plan->getPrice(),
-                "description" => "Assinatura AupetHeinsten - Plano {$this->proposal->plan->getLabel()} - Pet {$this->proposal->pet->name}",
-            ]
-        );
+        try {
+            $asaasService->createSignature(
+                [
+                    "billingType" => "CREDIT_CARD",
+                    "cycle" => "MONTHLY",
+                    "creditCard" => [
+                        "holderName" => $this->data['creditCard']['name'],
+                        "number" => Str::remove([' ', '.'], $this->data['creditCard']['number']),
+                        "expiryMonth" => $this->data['creditCard']['expiryMonth'],
+                        "expiryYear" => "20{$this->data['creditCard']['expiryYear']}",
+                        "ccv" => "318"
+                    ],
+                    "creditCardHolderInfo" => [
+                        "name" => $this->data['customer']['name'],
+                        "email" => $this->data['customer']['email'],
+                        "cpfCnpj" => Str::remove(['.', '-'], $this->data['customer']['document']),
+                        "postalCode" => $this->data['customer']['zip'],
+                        "addressNumber" => $this->data['customer']['number'],
+                        "addressComplement" => $this->data['customer']['complement'],
+                        "phone" => Str::remove(['(', ')', ' ', '-'], $this->data['customer']['phone']),
+                        "mobilePhone" => Str::remove(['(', ')', ' ', '-'], $this->data['customer']['phone'])
+                    ],
+                    "customer" => $asaasService->asaassCustomer['id'],
+                    "nextDueDate" => now()->format('Y-m-d'),
+                    "value" => $this->proposal->plan->getPrice(),
+                    "description" => "Assinatura AupetHeinsten - Plano {$this->proposal->plan->getLabel()} - Pet {$this->proposal->pet->name}",
+                ]
+            );
+        } catch (Exception $e) {
+            $this->isLoading = false;
+            $this->dispatch('alert', [
+                'title' => 'Erro ao Criar Assinatura',
+                'type' => 'error',
+                'message' => $e->getMessage(),
+            ]);
+            return;
+        }
+
+        $this->isLoading = false;
+
+        $this->dispatch('alert', [
+            'title' => 'Sucesso!',
+            'type' => 'success',
+            'message' => 'Assinatura Realizada com Sucesso!',
+        ]);
     }
     public function render()
     {

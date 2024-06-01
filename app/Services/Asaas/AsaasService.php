@@ -22,21 +22,29 @@ class AsaasService
     public function findOrCreateCustomer(array $customer): void
     {
 
-        $this->getCustomerByCpf($customer['cpfCnpj']);
+        try {
+            $this->getCustomerByCpf($customer['cpfCnpj']);
 
-        if (!empty($this->asaassCustomer)) {
-            return;
+            if (!empty($this->asaassCustomer)) {
+                return;
+            }
+
+            $this->createCustomer($customer);
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
         }
-
-        $this->createCustomer($customer);
     }
 
     public function createSignature(array $signature): void
     {
         try {
             $response = $this->client->post("/v3/subscriptions", $signature);
+
+            if ($response->status() !== 200) {
+                throw new \Exception($response->json()['errors'][0]['description']);
+            }
         } catch (\Exception $e) {
-            dd($e->getMessage());
+            throw new \Exception($e->getMessage());
         }
     }
 
@@ -48,7 +56,7 @@ class AsaasService
 
             $this->asaassCustomer = $response->json();
         } catch (\Exception $e) {
-            dd($e->getMessage());
+            throw new \Exception($e->getMessage());
         }
     }
 
@@ -65,7 +73,7 @@ class AsaasService
 
             $this->asaassCustomer = $response->json()['data'][0];
         } catch (\Exception $e) {
-            dd($e->getMessage());
+            throw new \Exception($e->getMessage());
         }
     }
 }
