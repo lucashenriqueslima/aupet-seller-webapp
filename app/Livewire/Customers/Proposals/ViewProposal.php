@@ -24,6 +24,7 @@ class ViewProposal extends Component implements HasForms, HasInfolists, HasActio
     use InteractsWithActions;
 
     public Proposal $proposal;
+    public $checkedTermsAndConditions = false;
 
     public function mount(string $encryptedId)
     {
@@ -68,19 +69,10 @@ class ViewProposal extends Component implements HasForms, HasInfolists, HasActio
                     ]),
             ]);
     }
-
-    public function proceedButton(): Action
-    {
-        return Action::make('delete')
-            ->label('Prosseguir')
-            ->extraAttributes(['class' => 'mt-4'])
-            ->url(fn (): string => route('customers.proposals.payment', ['encryptedId' => Crypt::encrypt($this->proposal->id)]))
-            ->requiresConfirmation();
-    }
-
-
     public function render()
     {
-        return view('livewire.customers.proposals.view-proposal');
+        return view('livewire.customers.proposals.view-proposal', [
+            'encryptedId' => Crypt::encrypt($this->proposal->id),
+        ]);
     }
 }

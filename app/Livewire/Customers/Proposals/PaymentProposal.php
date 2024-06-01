@@ -196,6 +196,10 @@ class PaymentProposal extends Component implements HasForms, HasActions
 
         $this->isLoading = false;
 
+        $this->proposal->update([
+            'status' => ProposalStatus::Accepted,
+        ]);
+
         $this->dispatch('alert', [
             'title' => 'Sucesso!',
             'type' => 'success',

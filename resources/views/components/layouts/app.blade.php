@@ -15,9 +15,6 @@
             }
         </style>
 
-        <script src="sweetalert2.min.js"></script>
-        <link rel="stylesheet" href="sweetalert2.min.css">
-
         @filamentStyles
         @vite('resources/css/app.css')
     </head>

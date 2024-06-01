@@ -6,7 +6,8 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    echo "Site em manutenção";
+    return;
 });
 
 Route::get('/cliente/proposta/{encryptedId}', ViewProposal::class)->name('customers.proposals.view');
