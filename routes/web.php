@@ -12,5 +12,5 @@ Route::get('/', function () {
 Route::get('/cliente/proposta/{encryptedId}', ViewProposal::class)->name('customers.proposals.view');
 Route::get('/cliente/proposta/pagamento/{encryptedId}', PaymentProposal::class)->name('customers.proposals.payment');
 Route::get('/download/termo', function () {
-    return response()->download("/home/aupetheinstencom/aupet-seller-webapp/storage/public/app/public/termo.pdf");
+    return response()->download("/home/aupetheinstencom/aupet-seller-webapp/storage/app/public/termo.pdf");
 })->name('download.termo');
